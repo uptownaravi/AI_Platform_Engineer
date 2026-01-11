@@ -1,0 +1,4 @@
+boto3>=1.30.0
+pymupdf>=1.22.0
+faiss-cpu>=1.7.4
+numpy>=1.26.0
