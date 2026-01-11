@@ -1,4 +1,4 @@
-# Warranty AI — AI Platform Engineer Learning Repo
+# AI Platform Engineer Learning Repo (And Building WarrantyAI)
 
 Transition from Cloud Engineer to AI Platform Engineering.
 My north-star for 2026 is to build Warranty AI — a production-grade, "warranty-aware" system that helps homeowners and office managers assess appliance health, identify "fine-print" gotchas, and optimize repair costs using Generative AI and semantic search.
