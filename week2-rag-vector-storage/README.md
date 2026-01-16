@@ -15,7 +15,7 @@ The platform is built on a Serverless Retrieval-Augmented Generation (RAG) archi
 
 ## Project Structure
 
-- `terraform/main.tf`: Deploys the S3 bucket, OpenSearch Serverless collection, and Bedrock Knowledge Base.
+- `infrastructure.tf`: Deploys the S3 bucket, OpenSearch Serverless collection, and Bedrock Knowledge Base.
 - `upload-and-vector.py`: Handles the secure upload of PDFs along with `.metadata.json` sidecar files to enforce multi-tenancy.
 - `retrieve-with-questions.py`: The production-tier RAG loop using the `retrieve_and_generate` API.
 
@@ -42,6 +42,7 @@ During a query, we use Metadata Filtering.
 
 ## Setup Instructions
 
-1. **Deploy Infra**: Run `terraform apply` in the `/terraform` folder.
+1. **Deploy Infra**: Run `terraform apply` in the `infrastructure.tf` file.
 2. **Ingest Data**: Use `python upload-and-vector.py` to upload your LG Refrigerator warranty.
+
 3. **Query AI**: Use `python retrieve-with-questions.py` to ask, "Is gas charging covered?"
