@@ -45,15 +45,10 @@ week8-langgraph-agents/
 │   ├── classifier.py   # Haiku-first classification (Sonnet fallback at confidence < 0.7)
 │   └── reminder.py     # Expiry calc + SNS notification (medium/high risk only)
 ├── infra/
-│   ├── main.tf         # Lambda + IAM + S3 trigger + CloudWatch alarm
-│   ├── sns.tf          # SNS topic + email subscription
-│   ├── variables.tf    # All configurable inputs
-│   └── outputs.tf      # Lambda ARN, SNS ARN, log group
-└── tests/
-    ├── conftest.py         # sys.path setup for pytest
-    ├── test_reader.py      # Reader agent unit tests (Textract + Bedrock mocked)
-    ├── test_classifier.py  # Classifier tests (Haiku path + Sonnet fallback)
-    └── test_reminder.py    # Reminder tests (risk level routing + SNS mock)
+    ├── main.tf         # Lambda + IAM + S3 trigger + CloudWatch alarm
+    ├── sns.tf          # SNS topic + email subscription
+    ├── variables.tf    # All configurable inputs
+    └── outputs.tf      # Lambda ARN, SNS ARN, log group
 ```
 
 ---
