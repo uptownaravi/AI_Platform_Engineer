@@ -103,10 +103,6 @@ make deploy \
 
 ---
 
-## Run Locally
-
-```bash
-
 ---
 
 ## Architecture Decisions
