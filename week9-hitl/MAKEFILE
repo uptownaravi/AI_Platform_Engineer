@@ -1,0 +1,37 @@
+# warrantyAI — Week 9 Makefile
+# Human-in-the-Loop + DynamoDB State
+
+.PHONY: build-layer plan deploy test run-local test-hitl test-resume clean
+
+LAYER_DIR  := /tmp/langgraph-layer
+LAYER_ZIP  := infra/langgraph_deps.zip
+REGION     := ap-south-1
+
+# ── Build Lambda layer (linux/arm64) ─────────────────────────────────────
+build-layer:
+	@echo "Building LangGraph Lambda layer for linux/arm64..."
+	rm -rf $(LAYER_DIR) && mkdir -p $(LAYER_DIR)/python
+	pip install langgraph langchain-core \
+		--target $(LAYER_DIR)/python \
+		--platform manylinux2014_aarch64 \
+		--implementation cp \
+		--python-version 3.12 \
+		--only-binary=:all: \
+		--upgrade
+	cd $(LAYER_DIR) && zip -r9 $(CURDIR)/$(LAYER_ZIP) python/
+	@echo "Layer built: $(LAYER_ZIP)"
+
+# ── Terraform ─────────────────────────────────────────────────────────────
+plan:
+	cd infra && terraform init -upgrade && terraform plan \
+		-var="notification_email=$(EMAIL)" \
+		-var="reviewer_email=$(REVIEWER_EMAIL)" \
+		-var="resume_lambda_arn=$(RESUME_LAMBDA_ARN)" \
+		-var="pipeline_lambda_arn=$(PIPELINE_LAMBDA_ARN)"
+
+deploy: build-layer
+	cd infra && terraform init -upgrade && terraform apply -auto-approve \
+		-var="notification_email=$(EMAIL)" \
+		-var="reviewer_email=$(REVIEWER_EMAIL)" \
+		-var="resume_lambda_arn=$(RESUME_LAMBDA_ARN)" \
+		-var="pipeline_lambda_arn=$(PIPELINE_LAMBDA_ARN)"
