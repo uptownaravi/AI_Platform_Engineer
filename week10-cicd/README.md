@@ -33,9 +33,7 @@ Traditional unit tests with mocked Bedrock responses don't catch any of these. T
 
 ```
 week10-cicd-regression/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml          ← CI/CD pipeline
+├── github-workflow.yaml          ← CI/CD pipeline
 ├── agents/
 │   └── classifier.py           ← run_classifier() wrapper for testing
 ├── tests/
