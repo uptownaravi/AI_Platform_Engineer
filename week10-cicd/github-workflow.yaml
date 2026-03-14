@@ -1,0 +1,172 @@
+# warrantyAI CI/CD Pipeline — Week 10
+#
+# Trigger: push or PR to main
+#
+# Jobs:
+#   1. regression-tests  — Run 20 golden fixtures against live Bedrock (Haiku)
+#                          Blocks deploy if accuracy < 90%
+#   2. build-and-deploy  — Build Docker image → push to ECR → update Lambda
+#                          Only runs on main branch AND after tests pass
+#
+# Secrets required (GitHub repo → Settings → Secrets and variables → Actions):
+#   AWS_ROLE_ARN    — OIDC role ARN from infra/oidc.tf output
+#   ECR_REGISTRY    — AWS account ECR registry URI (e.g. 123456789012.dkr.ecr.ap-south-1.amazonaws.com)
+#
+# OIDC setup: see infra/oidc.tf — no long-lived AWS keys stored in GitHub.
+
+name: warrantyAI CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  AWS_REGION:      ap-south-1
+  ECR_REGISTRY:    ${{ secrets.ECR_REGISTRY }}
+  ECR_REPOSITORY:  warrantyai-pipeline
+  LAMBDA_FUNCTION: warrantyai-langgraph-pipeline
+
+jobs:
+
+  #   Job 1: Prompt Regression Tests                     ─
+  regression-tests:
+    name: Prompt Regression Tests (20 fixtures · ≥ 90% accuracy)
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write   # Required for OIDC
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Configure AWS credentials (OIDC — no long-lived keys)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region:     ${{ env.AWS_REGION }}
+
+      - name: Run prompt regression suite
+        run: |
+          pytest tests/test_regression.py -v --tb=short \
+            --junit-xml=regression-results.xml 2>&1 | tee regression_report.txt
+        env:
+          AWS_REGION:       ${{ env.AWS_REGION }}
+          BEDROCK_MODEL_ID: anthropic.claude-haiku-4-5-20251001
+
+      - name: Upload regression report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regression-report-${{ github.sha }}
+          path: |
+            regression_report.txt
+            regression-results.xml
+          retention-days: 30
+
+      - name: Comment regression results on PR
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request' && always()
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('regression_report.txt', 'utf8');
+            // Extract the summary lines for the PR comment
+            const lines = report.split('\n');
+            const summary = lines
+              .filter(l => l.includes('passed') || l.includes('failed') || l.includes('REGRESSION') || l.includes('Accuracy'))
+              .slice(0, 20)
+              .join('\n');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### Prompt Regression Results\n\`\`\`\n${summary}\n\`\`\``
+            });
+
+  #   Job 2: Build → ECR → Lambda                       
+  build-and-deploy:
+    name: Build → ECR → Lambda
+    runs-on: ubuntu-latest
+    needs: regression-tests          # Only runs if tests pass
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region:     ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        run: |
+          IMAGE_TAG=$(git rev-parse --short HEAD)
+          docker build \
+            --build-arg BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ) \
+            --build-arg GIT_COMMIT=$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            .
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Push to ECR
+        run: |
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Deploy to Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name $LAMBDA_FUNCTION \
+            --image-uri     $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            --region        $AWS_REGION
+
+          # Wait until the function is fully updated before considering the job done
+          aws lambda wait function-updated \
+            --function-name $LAMBDA_FUNCTION
+
+          echo "Deployed $IMAGE_TAG to $LAMBDA_FUNCTION"
+
+      - name: Verify Lambda health
+        run: |
+          STATE=$(aws lambda get-function-configuration \
+            --function-name $LAMBDA_FUNCTION \
+            --query "State" --output text)
+          echo "Lambda state: $STATE"
+          if [ "$STATE" != "Active" ]; then
+            echo "ERROR: Lambda not in Active state after deploy"
+            exit 1
+          fi
+
+      - name: Summarise deployment
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Image tag | \`$IMAGE_TAG\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lambda | \`$LAMBDA_FUNCTION\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Region | \`$AWS_REGION\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Regression tests | passed ✓ |" >> $GITHUB_STEP_SUMMARY

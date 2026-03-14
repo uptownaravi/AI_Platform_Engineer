@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_019",
+  "description": "Washing machine motor failure, warranty expiring in 25 days (April 8) — high risk",
+  "input": {
+    "document_text": "Priority Warranty Claim. Appliance: Samsung 8kg Top Load Washing Machine (Model WA80T5260BY). Serial: SAM-WM-TL-203419. Customer: Geeta Mishra. Purchase Date: 2025-04-08. Warranty Period: 1 year. WARRANTY EXPIRY: 2026-04-08. Claim Date: 2026-03-14. Remaining Warranty: 25 days. Defect: Motor failed completely — machine drum not rotating. Machine is completely non-functional. Family of 5 with no alternative laundry facility. Technician Availability: Next available slot in 8 days. Customer requests expedited service given warranty expiry.",
+    "tenant_id": "tenant_appliance_19"
+  },
+  "expected": {
+    "risk_level": "high",
+    "confidence_min": 0.80
+  }
+}

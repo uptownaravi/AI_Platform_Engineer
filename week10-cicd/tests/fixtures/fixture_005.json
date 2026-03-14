@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_005",
+  "description": "Microwave, 3-year warranty, 9 months old — low risk",
+  "input": {
+    "document_text": "Warranty Registration Certificate. Appliance: IFB 30 Litre Convection Microwave (Model 30BRC2). Customer Name: Deepa Venkataraman. Purchase Date: 2025-06-20. Retail Store: BigBazaar Electronics, Chennai. Warranty Period: 3 years from purchase date. Expiry Date: 2028-06-20. Coverage includes magnetron, PCB, and all electrical components. Claim Details: Microwave starts but turntable motor not rotating. Estimated repair: Replace turntable motor.",
+    "tenant_id": "tenant_kitchen_05"
+  },
+  "expected": {
+    "risk_level": "low",
+    "confidence_min": 0.80
+  }
+}

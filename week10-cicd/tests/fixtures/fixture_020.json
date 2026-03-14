@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_020",
+  "description": "Commercial generator, 3-month warranty period (short = high), day 30 — high risk",
+  "input": {
+    "document_text": "Commercial Warranty Claim. Equipment: Kirloskar Green 7.5kVA Diesel Generator (Model KG1-7500S). Serial: KG-GEN-2026-00892. Customer: Blue Horizon Data Centre, Noida. Purchase Date: 2026-01-13. Warranty Type: Limited 3-month parts warranty (total warranty period under 6 months). Warranty End Date: 2026-04-13. Claim Date: 2026-03-14. Remaining: 30 days. Fault: Generator starting battery discharging rapidly — cannot hold charge beyond 2 weeks. Emergency generator failing to start during power outage drills. Business-critical equipment. Immediate battery replacement requested.",
+    "tenant_id": "tenant_commercial_20"
+  },
+  "expected": {
+    "risk_level": "high",
+    "confidence_min": 0.75
+  }
+}

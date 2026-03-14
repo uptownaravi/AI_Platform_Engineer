@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_009",
+  "description": "MacBook Pro accidental damage — warranty expires in ~110 days (July 2026) — medium risk",
+  "input": {
+    "document_text": "AppleCare Warranty Claim. Policy Holder: Jane Smith. Coverage: Accidental damage protection. Item: MacBook Pro 16-inch (M3 Pro). Serial: C02XG2JXJGH7. Purchase Date: 2024-07-10. AppleCare+ Expiry Date: 2026-07-10. Claim Date: 2026-03-14. Days until warranty expiry: approximately 118 days. Damage Description: Screen cracked after device dropped from desk approximately 1 metre. Screen shows spider-web crack pattern across lower third. Device otherwise fully functional. Repair Estimate: Screen replacement INR 42,000.",
+    "tenant_id": "tenant_electronics_09"
+  },
+  "expected": {
+    "risk_level": "medium",
+    "confidence_min": 0.75
+  }
+}

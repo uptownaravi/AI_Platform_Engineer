@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_012",
+  "description": "Smart TV panel defect, warranty expiring in ~100 days (June 2026) — medium risk",
+  "input": {
+    "document_text": "Warranty Claim — Smart Television. Model: TCL 65-inch QLED TV (65C728). Serial No.: TC-652728-009123. Customer: Vivek Bhat. Purchase Date: 2024-06-20. Warranty Period: 2 years. Warranty Expiry Date: 2026-06-20. Claim Date: 2026-03-14. Days Remaining: 98. Issue Reported: Vertical green line running across the left side of the screen. Issue started 3 weeks ago and has widened. Panel replacement likely required. Estimated Repair Cost: INR 22,000.",
+    "tenant_id": "tenant_electronics_12"
+  },
+  "expected": {
+    "risk_level": "medium",
+    "confidence_min": 0.75
+  }
+}

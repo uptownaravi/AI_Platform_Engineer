@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_008",
+  "description": "Refrigerator, warranty expiring in ~120 days (July 2026) — medium risk",
+  "input": {
+    "document_text": "Warranty Service Request. Product: Whirlpool 215L Single Door Refrigerator (Model WDE 205 ROY). Customer: Kavitha Subramaniam. Purchase Date: 2024-07-12. Warranty Period: 2 years. Warranty End Date: 2026-07-12. Current Date of Claim: 2026-03-14. Days Remaining on Warranty: approximately 120 days. Issue: Refrigerator not maintaining temperature below 10°C. Technician Note: Cooling coil partially blocked with ice, likely defrost heater fault.",
+    "tenant_id": "tenant_appliance_08"
+  },
+  "expected": {
+    "risk_level": "medium",
+    "confidence_min": 0.75
+  }
+}

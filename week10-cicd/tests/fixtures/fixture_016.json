@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_016",
+  "description": "Refrigerator, warranty expires in 45 days (April 28) — high risk",
+  "input": {
+    "document_text": "Warranty Service Request — Priority. Product: Godrej 236L Frost Free Refrigerator (Model RF EON 236B 25 HI). Customer: Sreedevi Nambiar. Purchase Date: 2024-04-28. Warranty Duration: 2 years. Warranty Expiry: 2026-04-28. Date of Claim: 2026-03-14. Remaining Warranty Period: 45 days. Fault: Refrigerator completely stopped cooling. Freezer compartment at room temperature. All food items spoiled. Motor appears to be running but no cooling. Likely compressor failure. This is the second compressor issue — first replaced under warranty in October 2025.",
+    "tenant_id": "tenant_appliance_16"
+  },
+  "expected": {
+    "risk_level": "high",
+    "confidence_min": 0.80
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_014",
+  "description": "Water heater, warranty expiring in ~110 days (July 2026) — medium risk",
+  "input": {
+    "document_text": "Warranty Repair Request. Product: A.O. Smith 25L Storage Water Heater (Model HSE-VAS-025). Customer: Nalini Reddy. Address: 12/3 MG Road, Bengaluru. Purchase Date: 2024-07-02. Warranty: 2 years tank, 5 years inner tank lining. Active Warranty End (2-year comprehensive): 2026-07-02. Claim Date: 2026-03-14. Days to Expiry: 110. Problem Reported: Water heater leaking from the bottom pressure relief valve. Technician Assessment: PRV worn and needs replacement. Risk of water damage if not addressed.",
+    "tenant_id": "tenant_appliance_14"
+  },
+  "expected": {
+    "risk_level": "medium",
+    "confidence_min": 0.75
+  }
+}
