@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_001",
+  "description": "New refrigerator, 3-year warranty, purchased 3 months ago — clearly low risk",
+  "input": {
+    "document_text": "Warranty Certificate. Product: Samsung Double Door Refrigerator (Model RT42K5552S8). Serial Number: SN-RF-2025-09112. Customer: Rajesh Nair. Purchase Date: 2025-12-10. Retailer: Croma, Bangalore. Warranty Period: 3 years comprehensive. Warranty End Date: 2028-12-10. Coverage: Manufacturing defects, compressor failure, electrical faults. Exclusions: Physical damage, pest infestation. Service Centre: Samsung Authorised Service, Koramangala. Claim Reason: Compressor making rattling noise.",
+    "tenant_id": "tenant_retail_01"
+  },
+  "expected": {
+    "risk_level": "low",
+    "confidence_min": 0.80
+  }
+}

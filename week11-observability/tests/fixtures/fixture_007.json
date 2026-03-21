@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_007",
+  "description": "Commercial dishwasher, 2-year warranty, recently installed — low risk",
+  "input": {
+    "document_text": "Commercial Equipment Warranty. Product: Bosch SMS68TI01I Free-Standing Dishwasher (Commercial Grade). Customer: Spice Route Restaurant, Pune. Purchase Order: PO-2026-0089. Purchase Date: 2026-01-15. Supplier: Hospitality Equipment India. Warranty Term: 24 months parts and labour. Warranty End Date: 2028-01-15. Fault Reported: Rinse cycle not completing — dishes remain soapy. Machine age at claim: 2 months.",
+    "tenant_id": "tenant_commercial_07"
+  },
+  "expected": {
+    "risk_level": "low",
+    "confidence_min": 0.80
+  }
+}

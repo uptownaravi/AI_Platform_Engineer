@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_015",
+  "description": "Smart TV compressor issue, warranty expires in 15 days (March 29) — high risk",
+  "input": {
+    "document_text": "URGENT Warranty Claim. Product: Panasonic 43-inch 4K LED TV (Model TH-43LX800DX). Serial: PNTV-2023-88721. Customer: Harish Pillai. Purchase Date: 2023-03-29. Warranty Period: 3 years. WARRANTY EXPIRY DATE: 2026-03-29. Claim Submitted: 2026-03-14. Days Remaining on Warranty: 15 DAYS. Issue: Complete backlight failure — screen shows image only when a torch is shone on it. Severity: Total loss of usability. Repair Required: Full panel or backlight driver board replacement. Customer has been waiting 10 days for technician visit. Urgency: Customer requests immediate repair before warranty lapses.",
+    "tenant_id": "tenant_electronics_15"
+  },
+  "expected": {
+    "risk_level": "high",
+    "confidence_min": 0.80
+  }
+}

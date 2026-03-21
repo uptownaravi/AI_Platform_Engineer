@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_004",
+  "description": "Laptop purchased 4 months ago, 2-year warranty — low risk",
+  "input": {
+    "document_text": "Limited Warranty Document. Product: Dell Inspiron 15 3000 Laptop (Model 3511). Service Tag: DXQP8X3. Owner: Arjun Sharma. Purchase Date: 2025-11-08. Authorized Dealer: Dell Store, Connaught Place, Delhi. Warranty Type: Standard 2-year onsite warranty. Warranty End Date: 2027-11-08. Coverage: Hardware defects, battery replacement (1 year). Exclusion: Software issues, accidental damage. Reported Problem: Keyboard keys sticking, touchpad unresponsive intermittently.",
+    "tenant_id": "tenant_electronics_04"
+  },
+  "expected": {
+    "risk_level": "low",
+    "confidence_min": 0.80
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_006",
+  "description": "Television 6 months old, 2-year warranty — low risk",
+  "input": {
+    "document_text": "Warranty Claim Form. Product: Sony Bravia 55-inch 4K LED TV (Model KD-55X80L). Serial Number: SY-TV-4521-B. Customer: Mohan Das. Purchase Date: 2025-09-01. Warranty Duration: 2 years from purchase. Warranty Expiry: 2027-09-01. Coverage: Panel defects, backlight issues, internal component failure. Customer Complaint: TV shuts off randomly after 2 hours of use. Service Engineer Assessment: Possible thermal shutdown due to ventilation blockage — no component fault found on inspection.",
+    "tenant_id": "tenant_electronics_06"
+  },
+  "expected": {
+    "risk_level": "low",
+    "confidence_min": 0.75
+  }
+}

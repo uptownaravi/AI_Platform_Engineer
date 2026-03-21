@@ -1,0 +1,13 @@
+# warrantyAI — Week 11 dependencies
+
+# AWS
+boto3>=1.34.0
+botocore>=1.34.0
+
+# LangSmith tracing (optional — @traceable is a no-op when env vars are absent)
+langsmith>=0.1.147
+
+# Testing
+pytest>=8.0.0
+pytest-xdist>=3.5.0    # -n auto for parallel regression tests
+numpy>=1.26.0          # p95 percentile calculation in test_latency.py

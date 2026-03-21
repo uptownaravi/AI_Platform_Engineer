@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_018",
+  "description": "Air conditioner, warranty expires in 75 days (May 28) — high risk",
+  "input": {
+    "document_text": "Warranty Claim Notice. Unit: Hitachi 2 Ton Inverter Split AC (Model RSOG324HEEA). Customer: Prakash Nair, Commercial Property, Kochi. Purchase Date: 2024-05-28. Warranty: 2 years standard. Warranty Expiry: 2026-05-28. Claim Date: 2026-03-14. Days Until Warranty Lapses: 75. Problem: Outdoor unit making grinding noise during operation. Vibration level significantly increased over past 2 weeks. Engineer Diagnosis: Fan motor bearing failure. If not repaired, compressor damage likely within days. Immediate replacement required.",
+    "tenant_id": "tenant_hvac_18"
+  },
+  "expected": {
+    "risk_level": "high",
+    "confidence_min": 0.80
+  }
+}

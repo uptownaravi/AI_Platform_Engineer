@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_003",
+  "description": "Brand new washing machine, 2-year warranty, purchased last month — low risk",
+  "input": {
+    "document_text": "Product Warranty Card. Item: LG Front Load Washing Machine 7kg (Model FHM1207SDL). Serial: LG-WM-2026-00341. Buyer: Sunita Krishnamurthy. Purchase Date: 2026-02-05. Purchase Location: Reliance Digital, Hyderabad. Warranty Duration: 2 years comprehensive. Warranty Expiry: 2028-02-05. Motor Warranty: 10 years. Issue Raised: Drum vibrating excessively during spin cycle. First claim — machine is 5 weeks old.",
+    "tenant_id": "tenant_appliance_03"
+  },
+  "expected": {
+    "risk_level": "low",
+    "confidence_min": 0.85
+  }
+}

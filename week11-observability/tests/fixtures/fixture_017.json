@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_017",
+  "description": "Laptop with short 5-month warranty, day 60 — high risk (short warranty period triggers high)",
+  "input": {
+    "document_text": "Warranty Document. Product: Lenovo IdeaPad Slim 3 (Model 82H801PWIN). Serial Number: PF3HZQX1. Customer: Kiran Bose. Purchase Date: 2025-12-15. Warranty Type: Limited 5-month manufacturer warranty. Warranty End Date: 2026-05-15. Claim Date: 2026-03-14. Warranty Period Duration: 5 months total (less than 6 months). Issue: Laptop battery swelling — back cover bulging. Battery must be replaced immediately due to safety risk. Customer requesting urgent service. Note: Short warranty period product.",
+    "tenant_id": "tenant_electronics_17"
+  },
+  "expected": {
+    "risk_level": "high",
+    "confidence_min": 0.75
+  }
+}

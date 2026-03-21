@@ -1,0 +1,330 @@
+# warrantyAI CI/CD Pipeline — Week 11
+#
+# Extends Week 10 with:
+#   Job 2: latency-benchmark  — p95 < 8s SLO gate (10 fixtures vs live Bedrock)
+#   Job 3: build-and-deploy   — deploys to Lambda staging alias (not $LATEST directly)
+#   Job 4: promote            — manual approval gate → promotes staging to production
+#
+# Pipeline flow:
+#
+#   Push to main / PR
+#         │
+#         ▼
+#   Job 1: regression-tests      ← Week 10: 20 fixtures, ≥ 90% accuracy
+#         │
+#         ▼
+#   Job 2: latency-benchmark     ← Week 11: 10 fixtures, p95 < 8s
+#         │
+#         │ (main branch only, both jobs must pass)
+#         ▼
+#   Job 3: build-and-deploy-staging
+#         ├── Build Docker image (ARM64)
+#         ├── Push to ECR with git SHA tag
+#         ├── Update Lambda $LATEST
+#         ├── Publish new Lambda version
+#         ├── Update staging alias → new version
+#         └── Smoke test staging alias
+#         │
+#         │ (requires manual approval — GitHub Environment: production)
+#         ▼
+#   Job 4: promote-to-production
+#         └── Run promote_canary.py --promote (100% traffic shift)
+#
+# Secrets required (same as Week 10):
+#   AWS_ROLE_ARN   — OIDC role ARN from infra/oidc.tf
+#   ECR_REGISTRY   — AWS ECR registry URI
+#
+# GitHub Environment required (one-time setup):
+#   Settings → Environments → New environment → "production"
+#   Add required reviewers (yourself, or your team)
+
+name: warrantyAI CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  AWS_REGION:      ap-south-1
+  ECR_REGISTRY:    ${{ secrets.ECR_REGISTRY }}
+  ECR_REPOSITORY:  warrantyai-pipeline
+  LAMBDA_FUNCTION: warrantyai-langgraph-pipeline
+
+jobs:
+
+  # Job 1: Prompt Regression Tests (Week 10)           
+  regression-tests:
+    name: Prompt Regression Tests (20 fixtures · ≥ 90% accuracy)
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token:      write
+      contents:      read
+      pull-requests: write   # for PR comment
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - run: pip install -r requirements.txt
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region:     ${{ env.AWS_REGION }}
+
+      - name: Run prompt regression suite
+        run: |
+          pytest tests/test_regression.py -v --tb=short \
+            --junit-xml=regression-results.xml 2>&1 | tee regression_report.txt
+        env:
+          AWS_REGION:   ${{ env.AWS_REGION }}
+          EMIT_METRICS: "false"  
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regression-report-${{ github.sha }}
+          path: |
+            regression_report.txt
+            regression-results.xml
+          retention-days: 30
+
+      - name: Comment regression results on PR
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request' && always()
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('regression_report.txt', 'utf8');
+            const lines = report.split('\n');
+            const summary = lines
+              .filter(l => l.includes('passed') || l.includes('failed') || l.includes('REGRESSION') || l.includes('Accuracy'))
+              .slice(0, 20).join('\n');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### Prompt Regression Results\n\`\`\`\n${summary}\n\`\`\``
+            });
+
+  # Job 2: Latency Benchmark (Week 11)           
+  latency-benchmark:
+    name: Latency Benchmark (10 fixtures · p95 < 8s)
+    runs-on: ubuntu-latest
+    needs: regression-tests 
+
+    permissions:
+      id-token:      write
+      contents:      read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - run: pip install -r requirements.txt
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region:     ${{ env.AWS_REGION }}
+
+      - name: Run latency benchmark
+        run: |
+          pytest tests/test_latency.py -v --tb=short -s \
+            --junit-xml=latency-results.xml 2>&1 | tee latency_report.txt
+        env:
+          AWS_REGION:   ${{ env.AWS_REGION }}
+          EMIT_METRICS: "false"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: latency-report-${{ github.sha }}
+          path: |
+            latency_report.txt
+            latency-results.xml
+          retention-days: 30
+
+      - name: Comment latency results on PR
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request' && always()
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('latency_report.txt', 'utf8');
+            const lines = report.split('\n');
+            const table = lines
+              .filter(l => l.includes('fixture_') || l.includes('p95') || l.includes('p50') || l.includes('SLO') || l.includes('LATENCY'))
+              .slice(0, 25).join('\n');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### Latency Benchmark Results\n\`\`\`\n${table}\n\`\`\``
+            });
+
+  # Job 3: Build → Staging alias 
+  build-and-deploy-staging:
+    name: Build → ECR → Lambda staging
+    runs-on: ubuntu-latest
+    needs: [regression-tests, latency-benchmark]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    permissions:
+      id-token: write
+      contents: read
+
+    outputs:
+      image_tag:       ${{ steps.build.outputs.image_tag }}
+      lambda_version:  ${{ steps.deploy.outputs.lambda_version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region:     ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        id: build
+        run: |
+          IMAGE_TAG=$(git rev-parse --short HEAD)
+          docker build \
+            --build-arg BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ) \
+            --build-arg GIT_COMMIT=$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            .
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Push to ECR
+        run: |
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Deploy to Lambda and publish version
+        id: deploy
+        run: |
+          # Update $LATEST with the new image
+          aws lambda update-function-code \
+            --function-name $LAMBDA_FUNCTION \
+            --image-uri     $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            --region        $AWS_REGION
+
+          # Wait for the code update to complete before publishing
+          aws lambda wait function-updated \
+            --function-name $LAMBDA_FUNCTION
+
+          # Publish a new immutable version from $LATEST
+          VERSION=$(aws lambda publish-version \
+            --function-name $LAMBDA_FUNCTION \
+            --description   "CI deploy $IMAGE_TAG" \
+            --query         Version --output text)
+
+          echo "lambda_version=$VERSION" >> $GITHUB_OUTPUT
+          echo "LAMBDA_VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Update staging alias → new version
+        run: |
+          aws lambda update-alias \
+            --function-name    $LAMBDA_FUNCTION \
+            --name             staging \
+            --function-version $LAMBDA_VERSION
+
+      - name: Smoke test staging alias
+        run: |
+          # Invoke the staging alias with a minimal test payload
+          aws lambda invoke \
+            --function-name "${LAMBDA_FUNCTION}:staging" \
+            --payload        '{"source": "smoke-test", "document_text": "Warranty: 3 years from 2025-01-01"}' \
+            --cli-binary-format raw-in-base64-out \
+            smoke_response.json
+          cat smoke_response.json
+          # Fail if the response contains an error key
+          if grep -q '"errorMessage"' smoke_response.json; then
+            echo "ERROR: Staging smoke test failed"
+            cat smoke_response.json
+            exit 1
+          fi
+          echo "Staging smoke test passed"
+
+      - name: Summarise staging deploy
+        run: |
+          echo "## Staging Deploy Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Image tag       | \`$IMAGE_TAG\`       |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lambda version  | \`$LAMBDA_VERSION\`  |" >> $GITHUB_STEP_SUMMARY
+          echo "| Alias updated   | \`staging\`           |" >> $GITHUB_STEP_SUMMARY
+          echo "| Regression      | passed ✓              |" >> $GITHUB_STEP_SUMMARY
+          echo "| Latency p95     | passed ✓              |" >> $GITHUB_STEP_SUMMARY
+          echo "| Smoke test      | passed ✓              |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Approve the **promote** job below to shift production traffic." >> $GITHUB_STEP_SUMMARY
+
+  # Job 4: Promote staging → production             
+  promote-to-production:
+    name: Promote staging → production
+    runs-on: ubuntu-latest
+    needs: build-and-deploy-staging
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    # Requires a GitHub Environment named "production" with required reviewers set.
+    # Settings → Environments → production → Required reviewers → (your username)
+    environment: production
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - run: pip install boto3
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region:     ${{ env.AWS_REGION }}
+
+      - name: Promote staging to production (100% traffic)
+        run: |
+          python scripts/promote_canary.py --promote
+        env:
+          LAMBDA_FUNCTION_NAME: ${{ env.LAMBDA_FUNCTION }}
+          AWS_REGION:           ${{ env.AWS_REGION }}
+
+      - name: Summarise production deploy
+        run: |
+          echo "## Production Promoted" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lambda version | \`${{ needs.build-and-deploy-staging.outputs.lambda_version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Image tag      | \`${{ needs.build-and-deploy-staging.outputs.image_tag }}\`      |" >> $GITHUB_STEP_SUMMARY
+          echo "| Traffic        | 100% → production alias                                         |" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_013",
+  "description": "Office printer, warranty ending in 4 months (July 2026) — medium risk",
+  "input": {
+    "document_text": "Warranty Service Record. Equipment: HP LaserJet Pro 4003dn Printer. Asset Tag: OFF-PRN-0042. Customer: Horizon Consulting Pvt Ltd, Gurgaon. Purchase Date: 2024-07-08. Warranty Term: 2 years on-site. Warranty Expiry: 2026-07-08. Service Call Date: 2026-03-14. Remaining Warranty: 116 days. Fault: Paper jamming consistently in Tray 2, error code 13.05.00. Previous service call for same issue: November 2025 — pick-up rollers replaced. This visit: Rollers inspected again, wear detected on separation pad.",
+    "tenant_id": "tenant_commercial_13"
+  },
+  "expected": {
+    "risk_level": "medium",
+    "confidence_min": 0.70
+  }
+}

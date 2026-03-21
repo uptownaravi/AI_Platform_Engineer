@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_011",
+  "description": "Washing machine, warranty ends in ~150 days (August 2026) — medium risk",
+  "input": {
+    "document_text": "Warranty Claim Form. Product: Bosch 6.5kg Front Load Washer (WAJ2006SIN). Serial: BOS-WM-190033. Customer: Ananya Joshi. Purchase Date: 2024-08-12. Warranty Expiry: 2026-08-12. Claim Date: 2026-03-14. Remaining days: approximately 151. Fault: Washing machine door seal leaking water. Minor flood incident — flooring slightly damaged. Engineering Inspection: Door gasket perished along lower section, requires replacement. No other faults detected.",
+    "tenant_id": "tenant_appliance_11"
+  },
+  "expected": {
+    "risk_level": "medium",
+    "confidence_min": 0.75
+  }
+}

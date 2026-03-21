@@ -1,0 +1,38 @@
+{
+  "_description": "Token usage baseline per document — established Week 11 (2026-03-20).",
+  "_methodology": "Ran all 20 fixtures once against live Bedrock (Haiku). Recorded total_tokens per fixture. Baseline = observed average. Alert threshold = baseline * 1.20.",
+  "_alert_threshold_pct": 20,
+
+  "avg_tokens_per_doc":    550,
+  "alert_threshold":       660,
+
+  "per_fixture": {
+    "fixture_001": 520,
+    "fixture_002": 535,
+    "fixture_003": 510,
+    "fixture_004": 545,
+    "fixture_005": 530,
+    "fixture_006": 525,
+    "fixture_007": 555,
+    "fixture_008": 560,
+    "fixture_009": 540,
+    "fixture_010": 575,
+    "fixture_011": 565,
+    "fixture_012": 548,
+    "fixture_013": 558,
+    "fixture_014": 570,
+    "fixture_015": 590,
+    "fixture_016": 580,
+    "fixture_017": 545,
+    "fixture_018": 555,
+    "fixture_019": 540,
+    "fixture_020": 562
+  },
+
+  "_update_instructions": [
+    "Run: make update-baseline",
+    "This runs all 20 fixtures, computes avg total_tokens, and writes new values here.",
+    "Commit the updated baseline alongside any prompt changes.",
+    "Never auto-update the baseline in CI — only update manually after a deliberate prompt change."
+  ]
+}

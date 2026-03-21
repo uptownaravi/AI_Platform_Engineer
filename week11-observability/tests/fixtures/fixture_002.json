@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_002",
+  "description": "Air conditioner, 5-year warranty, 1 year old — low risk",
+  "input": {
+    "document_text": "Warranty Registration. Product: Daikin 1.5 Ton Split AC (Model FTKG50TV). Customer: Priya Mehta. Address: Flat 4B, Andheri West, Mumbai. Purchase Date: 2025-01-20. Dealer: Cool Breeze Electronics. Warranty Period: 5 years parts and labour. Warranty End Date: 2030-01-20. Coverage: Compressor (5 years), PCB (3 years), parts and labour (1 year). Current Issue: Unit not cooling efficiently, suspected gas leak. Installation Date: 2025-01-25.",
+    "tenant_id": "tenant_hvac_02"
+  },
+  "expected": {
+    "risk_level": "low",
+    "confidence_min": 0.80
+  }
+}

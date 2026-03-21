@@ -1,0 +1,12 @@
+{
+  "document_id": "fixture_010",
+  "description": "Air conditioner, warranty expiring in ~140 days (August 2026) — medium risk",
+  "input": {
+    "document_text": "Warranty Claim Registration. Equipment: Voltas 1.8 Ton Window AC (Model 183 DZA). Customer: Ramesh Pillay. Purchase Date: 2024-08-02. Warranty: 2 years comprehensive. Warranty Expiry: 2026-08-02. Claim Raised: 2026-03-14. Remaining Warranty: 141 days. Problem: AC not cooling — room temperature remains 30°C despite running for 2 hours. Technician Diagnosis: Low refrigerant gas, likely small leak in evaporator coil. Parts Required: Evaporator coil replacement and gas recharge.",
+    "tenant_id": "tenant_hvac_10"
+  },
+  "expected": {
+    "risk_level": "medium",
+    "confidence_min": 0.75
+  }
+}
